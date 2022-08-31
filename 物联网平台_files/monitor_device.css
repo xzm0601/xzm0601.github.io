@@ -1,0 +1,125 @@
+.index_theLeft ul {
+    width: 100%;
+    padding: 0px;
+    margin: 0px;
+    overflow: auto;
+}
+
+.mapContainer{
+	min-height: 550px;
+	width:100%;
+	padding-left:170px;
+}
+
+.app-container{
+	background:  #f2f2f2;
+	width: 100%;
+}
+.sceneList-info{
+/* 		margin-left: 10px; */
+/*     margin-right: 40px; */
+    padding-top: 10px;
+}
+h3{
+	margin: 15px 0;
+}
+.box-white {
+    width: 97%;
+    min-width: 897px;
+    padding-bottom: 0;
+    margin: 0 auto;
+}
+.box {
+    padding: 10px;
+    padding-top:1px;
+    border-left: 1px solid #d2d6de;
+    border-right: 1px solid #d2d6de;
+    border-bottom: 1px solid #d2d6de;
+}
+.box {
+    border: 0!important;
+    box-shadow: 0 0 2px 1px rgba(13,5,9,.08)!important;
+}
+.box {
+    position: relative;
+    border-radius: 3px;
+    background: #fff;
+    border-top: 3px solid #d2d6de;
+    margin-bottom: 10px;
+    width: 100%;
+    box-shadow: 0 1px 1px rgba(0,0,0,.1);
+}
+.join-device-box .line{
+    border-bottom: 1px solid #f3f3f3;
+}
+.join-device-box .line:LAST-CHILD{
+	 border-bottom: 0;
+}
+
+.join-device-box .line:HOVER{
+	background: #f3f3f3;
+}
+
+.sensor_info_container span{
+	line-height: 60px;
+}
+
+.sensor_info_container{
+	padding-top: 10px;
+}
+
+.join-device-box a{
+	text-align: center;
+	text-decoration: underline !important;
+	cursor: pointer;
+}
+.join-device-box a:HOVER{
+	color:#333;
+}
+.join-device-box p{
+	line-height: 28px;
+	color: #999894;
+}
+.sensor-value{
+	font-size: 23px;
+	color:#337ab7;
+	padding-left: 7px;
+}
+.join-device-box .sensor_img{
+	padding-left: 20px;
+	vertical-align: middle;
+	
+	width: 65px;
+	height: 45px;
+}
+.join-device-box .sensor_name{
+	padding-left: 10px;
+}
+.get_sensor{
+	
+}
+
+.line{
+	height: 60px;
+}
+
+h4{
+	padding: 10px 0;
+    border-bottom: 1px solid #d9d9d9;
+}
+
+.device_container{
+	padding: 11px 0;
+	border-bottom: 1px solid #d9d9d9;
+}
+
+.button.border-sub.active{
+	color: #fff;
+    border-color: #09f;
+    background-color: #09f;
+}
+
+.video_container{
+	line-height: 60px;
+	padding-top: 10px;
+}

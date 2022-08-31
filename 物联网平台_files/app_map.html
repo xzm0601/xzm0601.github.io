@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<!-- saved from url=(0049)http://wulian.voczxjc.com/iot/service/iot/monitor -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+
+
+
+
+ 
+
+
+
+
+
+<script>
+	var basePath = "/iot" ;
+	var localUrl = basePath +  "/service";
+	var imgUrl = "http://wulian.voczxjc.com/res";
+	var base_domain="http://"+window.location.host+"/iot";
+ 	var userKey= "2e7358d0a5a942edb9dfc25b226e5179"; 
+	var websocket_url = 'ws://' + window.location.host + '物联网平台/service/websocket';
+	var videoUrl = "";
+	var status_code  =  {
+			'OK' : 2 ,
+			'NO_DATA':4
+	}
+	var device_status = {
+			'OPEN': 65535,
+			'CLOSE': 0
+	};
+</script>
+<title>物联网平台</title> 
+
+<link rel="shortcut icon" href="http://wulian.voczxjc.com/iot/image/oss/iot/favicon2.ico" type="image/x-icon">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script type="text/javascript" src="./jquery-1.8.3.min.js.下载"></script>
+
+<link type="text/css" href="./pintuer.min.css" rel="stylesheet">
+<link rel="stylesheet" href="./layui.css" media="all">
+<script type="text/javascript" src="./pintuer.min.js.下载"></script>
+
+<script type="text/javascript" src="./layer.js.下载"></script><link rel="stylesheet" href="./layer(1).css" id="layuicss-layer">
+
+
+
+<script type="text/javascript" src="./easyui.js.下载"></script>
+<link type="text/css" href="./easyui.css" rel="stylesheet">
+
+
+
+<script>
+	$(function(){
+		initPage();
+		$(window).resize(function() {
+			initPage();
+		});
+	})
+	
+	function initPage(){
+		if( $(".mapContainer").height()< $(window).height()){
+			$(".app-container,.mapContainer").css("height",$(window).height());
+		}else{
+			$(".app-container,.mapContainer").css("min-height",$(window).height());
+		}
+	}
+</script>
+
+
+
+
+
+
+
+
+
+
+<style type="text/css">
+.index_theLeft ul {
+    width: 100%;
+    padding: 0px;
+    margin: 0px;
+    overflow: auto;
+}
+
+.mapContainer{
+	height: 550px;width:100%;padding-left:170px;
+}
+
+.app-container{
+	background:  #f2f2f2;width: 100%;border-top:1px solid #ecf0f5;
+}
+
+.box-white {
+    width: 97%;
+    min-width: 897px;
+    padding-bottom: 0;
+    margin: 0 auto;
+}
+.box {
+    padding: 10px;
+    padding-top:1px;
+    border-left: 1px solid #d2d6de;
+    border-right: 1px solid #d2d6de;
+    border-bottom: 1px solid #d2d6de;
+}
+.box {
+    border: 0!important;
+    box-shadow: 0 0 2px 1px rgba(13,5,9,.08)!important;
+}
+.box {
+    position: relative;
+    border-radius: 3px;
+    background: #fff;
+    border-top: 3px solid #d2d6de;
+    margin-bottom: 20px;
+    width: 100%;
+    box-shadow: 0 1px 1px rgba(0,0,0,.1);
+}
+
+.sceneList-info{
+	padding-top: 10px;
+	padding-left: 10px;
+}
+	
+</style>
+</head>
+<body>
+	<div>
+		<div>
+			<!-- 左边栏 -->
+			<div class="float-left index_theLeft" style="width:170px;">
+				<div class="prolist" style="height:94px;">
+					<span>项目列表</span>
+					<br>
+					<input placeholder="项目名称模糊查询" class="input input-self" oninput="onInputChange(event)">
+				</div>
+				<ul class="dashboard-menu" id="projectUl">
+					
+						<li onclick="changeScene(this)" class="active" sid="144">
+	                       <span class="icon-stack-overflow"></span>&nbsp;北方公司八场
+	                    </li>
+					
+				</ul>
+			</div>
+		</div>
+	</div>
+
+<script type="text/javascript">
+function onInputChange(event){
+	var evValue = event.target.value;
+	var content = document.getElementById("projectUl");
+	var children = content.children;
+	for(var i=0;i<children.length;i++){
+		children[i].style.display="";
+	}
+	if(evValue.trim() == ""){
+		for(var i=0;i<children.length;i++){
+			children[i].style.display="";
+		}
+	}else{
+		for(var i=0;i<children.length;i++){
+			var text = children[i].innerText;
+			if(text.indexOf(evValue) == -1){
+				children[i].style.display="none";
+			}
+		}	
+	}
+}
+</script>
+
+<script type="text/javascript" src="./mqtt.min.js.下载"></script>
+<script type="text/javascript">
+	var sensor_self_flag = 1 ; 
+</script>
+<link type="text/css" href="./monitor_device.css" rel="stylesheet">
+<style type="text/css">
+	.red-span{
+		background: #f44336;
+	    padding: 2px 6px;
+	    color: #fff;
+	    border-radius: 4px;
+	    cursor: pointer;
+	}
+	.span-dis{
+		display: inline-block;width: 300px;text-align: left;margin-right: 100px;
+		text-overflow: ellipsis;
+		white-space: nowrap;overflow: hidden;
+	}
+	
+	.blue-span{
+		background: #3499da;
+	    padding: 3px 6px;
+	    color: #fff;
+	    border-radius: 4px;
+	}
+	.sensorlon{
+		white-space: nowrap;
+	    text-overflow: ellipsis;
+	    overflow: hidden;
+	    width: 100%;
+	    display: block;
+	}
+	.blue-span{
+		background: #3499da;
+	    padding: 3px 6px;
+	    color: #fff;
+	    border-radius: 4px;
+	}
+	
+	.pro-span{
+		background: #4caf50;
+	    padding: 3px 6px;
+	    color: #fff;
+	    border-radius: 4px;
+	}
+	
+	.grey-span{
+		background: #aaa;
+	    padding: 3px 6px;
+	    color: #fff;
+	    border-radius: 4px;
+	    opacity: 0.9;
+	}
+	.time-span{
+		color: #999894;
+	}
+	
+	.line{
+		width: 50%;
+		float: left ;
+	}
+	.sensor_info_container{
+		overflow: hidden;
+	}
+	.sensor-value{
+		font-size: 21px;
+	}
+	
+</style>
+
+
+	<div>
+		<!--  下方部位  -->
+		<div>
+			<!-- 左边栏 -->
+			
+			<div class="mapContainer" style="height: 831px;">
+				<div class="app-container" style="height: 831px;">
+					<div style="padding: 6px 8px 6px 10px;background: #fff;border-left: 1px solid #f2f2f2;">
+						 <input type="text" style="display: inline;width: 210px;margin-right: 20px;" autocomplete="off" placeholder="设备号检索" class="layui-input device_code">
+						 <button type="button" onclick="searchDevice();" style="line-height: 34px;height:34px;" class="layui-btn  layui-btn-normal">检索</button>
+					</div>
+					<div class="container-layout sceneList-info">
+				<div class="box join-device-box">
+					<div class="device_container"><i class="icon-hdd-o"></i>&nbsp;
+						<span style="width: 100px;display: inline-block;">北方公司八场</span> 
+						&nbsp;&nbsp;&nbsp;<!--<span> <span class='red-span'>设备已离线</span></span>  -->
+						<span class="float-right pro-span" style="margin-right:20px;" onclick="deviceSetting(311)" tag="311">设置参数</span>
+						<span class="float-right span-dis" style="">设备号：464243115416</span>
+					</div>
+					<div class="sensor_info_container">
+						
+				<div class="line">
+					 <div class="x6">
+					 	<div>
+					 		<div style="float: left;margin-top: 7.5px;">
+					 			<img class="sensor_img" alt="image" src="./416.png">
+					 		</div>
+					 		<div style="float: left;margin-top: 9px;">
+					 			<div style="margin: 2px 0 0 0;" class="sensor_name">电池电压</div>
+					 			<div style="padding: 2px 0 0px 10px;" class="time-span">2022/08/08 09:06:30</div>
+					 		</div>
+					 	</div>
+					 </div>
+					 <div class="x4">
+					 	<span class="sensor-value">14.5 V</span>
+					 </div>
+					 <div class="x2 text-align-center">
+					 	<a href="http://wulian.voczxjc.com/iot/service/iot/sensors_detail?id=2361&amp;sid=144">详情 <span class="icon-angle-double-right"></span> </a>
+					 </div>
+				</div>
+			
+				<div class="line">
+					 <div class="x6">
+					 	<div>
+					 		<div style="float: left;margin-top: 7.5px;">
+					 			<img class="sensor_img" alt="image" src="./387.png">
+					 		</div>
+					 		<div style="float: left;margin-top: 9px;">
+					 			<div style="margin: 2px 0 0 0;" class="sensor_name">空气温度</div>
+					 			<div style="padding: 2px 0 0px 10px;" class="time-span">2022/08/08 09:06:30</div>
+					 		</div>
+					 	</div>
+					 </div>
+					 <div class="x4">
+					 	<span class="sensor-value">19.6 ℃</span>
+					 </div>
+					 <div class="x2 text-align-center">
+					 	<a href="http://wulian.voczxjc.com/iot/service/iot/sensors_detail?id=2362&amp;sid=144">详情 <span class="icon-angle-double-right"></span> </a>
+					 </div>
+				</div>
+			
+				<div class="line">
+					 <div class="x6">
+					 	<div>
+					 		<div style="float: left;margin-top: 7.5px;">
+					 			<img class="sensor_img" alt="image" src="./389.png">
+					 		</div>
+					 		<div style="float: left;margin-top: 9px;">
+					 			<div style="margin: 2px 0 0 0;" class="sensor_name">空气湿度</div>
+					 			<div style="padding: 2px 0 0px 10px;" class="time-span">2022/08/08 09:06:30</div>
+					 		</div>
+					 	</div>
+					 </div>
+					 <div class="x4">
+					 	<span class="sensor-value">71.9 %</span>
+					 </div>
+					 <div class="x2 text-align-center">
+					 	<a href="http://wulian.voczxjc.com/iot/service/iot/sensors_detail?id=2363&amp;sid=144">详情 <span class="icon-angle-double-right"></span> </a>
+					 </div>
+				</div>
+			
+				<div class="line">
+					 <div class="x6">
+					 	<div>
+					 		<div style="float: left;margin-top: 7.5px;">
+					 			<img class="sensor_img" alt="image" src="./390.png">
+					 		</div>
+					 		<div style="float: left;margin-top: 9px;">
+					 			<div style="margin: 2px 0 0 0;" class="sensor_name">光照强度</div>
+					 			<div style="padding: 2px 0 0px 10px;" class="time-span">2022/08/08 09:11:50</div>
+					 		</div>
+					 	</div>
+					 </div>
+					 <div class="x4">
+					 	<span class="sensor-value">49029 Lux</span>
+					 </div>
+					 <div class="x2 text-align-center">
+					 	<a href="http://wulian.voczxjc.com/iot/service/iot/sensors_detail?id=2364&amp;sid=144">详情 <span class="icon-angle-double-right"></span> </a>
+					 </div>
+				</div>
+			
+				<div class="line">
+					 <div class="x6">
+					 	<div>
+					 		<div style="float: left;margin-top: 7.5px;">
+					 			<img class="sensor_img" alt="image" src="./393.png">
+					 		</div>
+					 		<div style="float: left;margin-top: 9px;">
+					 			<div style="margin: 2px 0 0 0;" class="sensor_name">大气压力</div>
+					 			<div style="padding: 2px 0 0px 10px;" class="time-span">2022/08/08 09:11:50</div>
+					 		</div>
+					 	</div>
+					 </div>
+					 <div class="x4">
+					 	<span class="sensor-value">96.1 kpa</span>
+					 </div>
+					 <div class="x2 text-align-center">
+					 	<a href="http://wulian.voczxjc.com/iot/service/iot/sensors_detail?id=2365&amp;sid=144">详情 <span class="icon-angle-double-right"></span> </a>
+					 </div>
+				</div>
+			
+				<div class="line">
+					 <div class="x6">
+					 	<div>
+					 		<div style="float: left;margin-top: 7.5px;">
+					 			<img class="sensor_img" alt="image" src="./387.png">
+					 		</div>
+					 		<div style="float: left;margin-top: 9px;">
+					 			<div style="margin: 2px 0 0 0;" class="sensor_name">土壤温度</div>
+					 			<div style="padding: 2px 0 0px 10px;" class="time-span">2022/08/08 09:06:30</div>
+					 		</div>
+					 	</div>
+					 </div>
+					 <div class="x4">
+					 	<span class="sensor-value">18.3 ℃</span>
+					 </div>
+					 <div class="x2 text-align-center">
+					 	<a href="http://wulian.voczxjc.com/iot/service/iot/sensors_detail?id=2366&amp;sid=144">详情 <span class="icon-angle-double-right"></span> </a>
+					 </div>
+				</div>
+			
+				<div class="line">
+					 <div class="x6">
+					 	<div>
+					 		<div style="float: left;margin-top: 7.5px;">
+					 			<img class="sensor_img" alt="image" src="./389.png">
+					 		</div>
+					 		<div style="float: left;margin-top: 9px;">
+					 			<div style="margin: 2px 0 0 0;" class="sensor_name">土壤湿度</div>
+					 			<div style="padding: 2px 0 0px 10px;" class="time-span">2022/08/08 09:06:30</div>
+					 		</div>
+					 	</div>
+					 </div>
+					 <div class="x4">
+					 	<span class="sensor-value">67.9 %</span>
+					 </div>
+					 <div class="x2 text-align-center">
+					 	<a href="http://wulian.voczxjc.com/iot/service/iot/sensors_detail?id=2367&amp;sid=144">详情 <span class="icon-angle-double-right"></span> </a>
+					 </div>
+				</div>
+			
+				<div class="line">
+					 <div class="x6">
+					 	<div>
+					 		<div style="float: left;margin-top: 7.5px;">
+					 			<img class="sensor_img" alt="image" src="./412.png">
+					 		</div>
+					 		<div style="float: left;margin-top: 9px;">
+					 			<div style="margin: 2px 0 0 0;" class="sensor_name">光合辐射</div>
+					 			<div style="padding: 2px 0 0px 10px;" class="time-span">2022/08/08 09:12:30</div>
+					 		</div>
+					 	</div>
+					 </div>
+					 <div class="x4">
+					 	<span class="sensor-value">1105 umol/m2/s</span>
+					 </div>
+					 <div class="x2 text-align-center">
+					 	<a href="http://wulian.voczxjc.com/iot/service/iot/sensors_detail?id=2369&amp;sid=144">详情 <span class="icon-angle-double-right"></span> </a>
+					 </div>
+				</div>
+			
+				<div class="line">
+					 <div class="x6">
+					 	<div>
+					 		<div style="float: left;margin-top: 7.5px;">
+					 			<img class="sensor_img" alt="image" src="./395.png">
+					 		</div>
+					 		<div style="float: left;margin-top: 9px;">
+					 			<div style="margin: 2px 0 0 0;" class="sensor_name">PM2.5</div>
+					 			<div style="padding: 2px 0 0px 10px;" class="time-span">2022/08/08 09:12:30</div>
+					 		</div>
+					 	</div>
+					 </div>
+					 <div class="x4">
+					 	<span class="sensor-value">3 ug/m3</span>
+					 </div>
+					 <div class="x2 text-align-center">
+					 	<a href="http://wulian.voczxjc.com/iot/service/iot/sensors_detail?id=2370&amp;sid=144">详情 <span class="icon-angle-double-right"></span> </a>
+					 </div>
+				</div>
+			
+				<div class="line">
+					 <div class="x6">
+					 	<div>
+					 		<div style="float: left;margin-top: 7.5px;">
+					 			<img class="sensor_img" alt="image" src="./405.png">
+					 		</div>
+					 		<div style="float: left;margin-top: 9px;">
+					 			<div style="margin: 2px 0 0 0;" class="sensor_name">雨量 </div>
+					 			<div style="padding: 2px 0 0px 10px;" class="time-span">2022/08/08 09:11:50</div>
+					 		</div>
+					 	</div>
+					 </div>
+					 <div class="x4">
+					 	<span class="sensor-value">0 mm</span>
+					 </div>
+					 <div class="x2 text-align-center">
+					 	<a href="http://wulian.voczxjc.com/iot/service/iot/sensors_detail?id=2371&amp;sid=144">详情 <span class="icon-angle-double-right"></span> </a>
+					 </div>
+				</div>
+			
+				<div class="line">
+					 <div class="x6">
+					 	<div>
+					 		<div style="float: left;margin-top: 7.5px;">
+					 			<img class="sensor_img" alt="image" src="./384.png">
+					 		</div>
+					 		<div style="float: left;margin-top: 9px;">
+					 			<div style="margin: 2px 0 0 0;" class="sensor_name">风速 </div>
+					 			<div style="padding: 2px 0 0px 10px;" class="time-span">2022/08/08 09:11:50</div>
+					 		</div>
+					 	</div>
+					 </div>
+					 <div class="x4">
+					 	<span class="sensor-value">1.5 m/s</span>
+					 </div>
+					 <div class="x2 text-align-center">
+					 	<a href="http://wulian.voczxjc.com/iot/service/iot/sensors_detail?id=2372&amp;sid=144">详情 <span class="icon-angle-double-right"></span> </a>
+					 </div>
+				</div>
+			
+				<div class="line">
+					 <div class="x6">
+					 	<div>
+					 		<div style="float: left;margin-top: 7.5px;">
+					 			<img class="sensor_img" alt="image" src="./383.png">
+					 		</div>
+					 		<div style="float: left;margin-top: 9px;">
+					 			<div style="margin: 2px 0 0 0;" class="sensor_name">风向</div>
+					 			<div style="padding: 2px 0 0px 10px;" class="time-span">2022/08/08 09:11:50</div>
+					 		</div>
+					 	</div>
+					 </div>
+					 <div class="x4">
+					 	<span class="sensor-value">270 °</span>
+					 </div>
+					 <div class="x2 text-align-center">
+					 	<a href="http://wulian.voczxjc.com/iot/service/iot/sensors_detail?id=2373&amp;sid=144">详情 <span class="icon-angle-double-right"></span> </a>
+					 </div>
+				</div>
+			
+				<div class="line">
+					 <div class="x6">
+					 	<div>
+					 		<div style="float: left;margin-top: 7.5px;">
+					 			<img class="sensor_img" alt="image" src="./402.png">
+					 		</div>
+					 		<div style="float: left;margin-top: 9px;">
+					 			<div style="margin: 2px 0 0 0;" class="sensor_name">日照时数</div>
+					 			<div style="padding: 2px 0 0px 10px;" class="time-span">2022/08/08 09:12:30</div>
+					 		</div>
+					 	</div>
+					 </div>
+					 <div class="x4">
+					 	<span class="sensor-value">1 min</span>
+					 </div>
+					 <div class="x2 text-align-center">
+					 	<a href="http://wulian.voczxjc.com/iot/service/iot/sensors_detail?id=2374&amp;sid=144">详情 <span class="icon-angle-double-right"></span> </a>
+					 </div>
+				</div>
+			
+					</div>
+				</div>
+			</div>
+				</div>
+			</div>
+			
+			<div id="template0" class="hide">
+				<div class="box join-device-box">
+					<div class="device_container"><i class="icon-hdd-o"></i>&nbsp;
+						<span style="width: 100px;display: inline-block;">{0}</span> 
+						&nbsp;&nbsp;&nbsp;<!--<span> {1}</span>  -->
+						<span class="float-right pro-span" style="margin-right:20px;" onclick="deviceSetting({4})" tag="{4}">设置参数</span>
+						<span class="float-right span-dis" style="">设备号：{2}</span>
+					</div>
+					<div class="sensor_info_container">
+						{3}
+					</div>
+				</div>
+			</div>
+			
+			<!-- 连续型 -->
+			<div id="template1" class="hide">
+				<div class="line">
+					 <div class="x6">
+					 	<div>
+					 		<div style="float: left;margin-top: 7.5px;">
+					 			<img class="sensor_img" alt="image" src="./{6}.png">
+					 		</div>
+					 		<div style="float: left;margin-top: 9px;">
+					 			<div style="margin: 2px 0 0 0;" class="sensor_name">{0}</div>
+					 			<div style="padding: 2px 0 0px 10px;" class="time-span">{2}</div>
+					 		</div>
+					 	</div>
+					 </div>
+					 <div class="x4">
+					 	<span class="sensor-value">{3}</span>
+					 </div>
+					 <div class="x2 text-align-center">
+					 	<a href="http://wulian.voczxjc.com/iot/service/iot/sensors_detail?id={4}&amp;sid={5}">详情 <span class="icon-angle-double-right"></span> </a>
+					 </div>
+				</div>
+			</div>
+			<!-- 开关 -->
+			<div id="template2" class="hide">
+				<div class="line">
+					 <div class="x6">
+					 	<div>
+					 		<div style="float: left;margin-top: 7.5px;">
+					 			<img class="sensor_img" alt="image" src="./{8}.png">
+					 		</div>
+					 		<div style="float: left;margin-top: 9px;">
+					 			<div style="margin: 2px 0 0 0;" class="sensor_name">{0}</div>
+					 			<div style="padding: 2px 0 0px 10px;" class="time-span">{2}</div>
+					 		</div>
+					 	</div>
+					 </div>
+					 <div class="x4">
+					 	<img style="margin:15px 0 0 10px;cursor: pointer;" tag="{7}" onclick="switchSensor(this,{4},{5})" {3}="">
+					 </div>
+					 <div class="x2 text-align-center">
+					 	<a href="http://wulian.voczxjc.com/iot/service/iot/sensors_detail?id={4}&amp;sid={6}">详情 <span class="icon-angle-double-right"></span> </a>
+					 </div>
+				</div>
+			</div>
+			<!-- 点动控制 -->
+			<div id="template7" class="hide">
+				<div class="line">
+					  <div class="x6">
+					 	<div>
+					 		<div style="float: left;margin-top: 7.5px;">
+					 			<img class="sensor_img" alt="image" src="./{8}.png">
+					 		</div>
+					 		<div style="float: left;margin-top: 9px;">
+					 			<div style="margin: 2px 0 0 0;" class="sensor_name">{0}</div>
+					 			<div style="padding: 2px 0 0px 10px;" class="time-span">{2}</div>
+					 		</div>
+					 	</div>
+					 </div>
+					 <div class="x4">
+					 	<img style="margin:10px 0 0 33px;cursor: pointer;width:35px;" tag="{7}" onclick="switchSensordian(this,{4},{5})" {3}="">
+					 </div>
+					 <div class="x2 text-align-center">
+					 	<a href="http://wulian.voczxjc.com/iot/service/iot/sensors_detail?id={4}&amp;sid={6}">详情 <span class="icon-angle-double-right"></span> </a>
+					 </div>
+				</div>
+			</div>
+			<!-- 三级开关 -->
+			<div id="template4" class="hide">
+				<div class="line">
+					 <div class="x6">
+					 	<div>
+					 		<div style="float: left;margin-top: 7.5px;">
+					 			<img class="sensor_img" alt="image" src="./{6}.png">
+					 		</div>
+					 		<div style="float: left;margin-top: 9px;">
+					 			<div style="margin: 2px 0 0 0;" class="sensor_name">{0}</div>
+					 			<div style="padding: 2px 0 0px 10px;" class="time-span">{2}</div>
+					 		</div>
+					 	</div>
+					 </div>
+					 <div class="x4">
+					 		{3}
+					 </div>
+					 <div class="x2 text-align-center">
+					 	<a href="http://wulian.voczxjc.com/iot/service/iot/sensors_detail?id={4}&amp;sid={5}">详情 <span class="icon-angle-double-right"></span> </a>
+					 </div>
+				</div>
+			</div>
+			<!-- 离散 -->
+			<div id="template3" class="hide">
+				<div class="line">
+					<div class="x6">
+					 	<div>
+					 		<div style="float: left;margin-top: 7.5px;">
+					 			<img class="sensor_img" alt="image" src="./{6}.png">
+					 		</div>
+					 		<div style="float: left;margin-top: 9px;">
+					 			<div style="margin: 2px 0 0 0;" class="sensor_name">{0}</div>
+					 			<div style="padding: 2px 0 0px 10px;" class="time-span">{2}</div>
+					 		</div>
+					 	</div>
+					 </div>
+					 <div class="x4">
+					 	<span class="sensor-value">{3}</span>
+					 </div>
+					 <div class="x2 text-align-center">
+					 	<a href="http://wulian.voczxjc.com/iot/service/iot/sensors_detail?id={4}&amp;sid={5}">详情 <span class="icon-angle-double-right"></span> </a>
+					 </div>
+				</div>
+			</div>
+			<!-- 定位型 -->
+			<div id="template6" class="hide">
+				<div class="line">
+					 <div class="x6">
+					 	<div>
+					 		<div style="float: left;margin-top: 7.5px;">
+					 			<img class="sensor_img" alt="image" src="./{6}.png">
+					 		</div>
+					 		<div style="float: left;margin-top: 9px;">
+					 			<div style="margin: 2px 0 0 0;" class="sensor_name">{0}</div>
+					 			<div style="padding: 2px 0 0px 10px;" class="time-span">{2}</div>
+					 		</div>
+					 	</div>
+					 </div>
+					 <div class="x4">
+					 	<span style="font-size: 18px;" class="sensor-value sensorlon">{3}</span>
+					 </div>
+					 <div class="x2 text-align-center">
+					 	<a href="http://wulian.voczxjc.com/iot/service/iot/sensors_detail?id={4}&amp;sid={5}">详情 <span class="icon-angle-double-right"></span> </a>
+					 </div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+<script type="text/javascript">
+function changeScene(obj){
+	
+	var tempT = "/scene/update/"+ $(".dashboard-menu li.active").attr("sid")  ;
+	client.unsubscribe(tempT );
+	
+	if(! $(obj).hasClass("active") ){
+		$(".device_code").val('');
+		device_code = '' ;
+	}
+	$(".dashboard-menu li").removeClass("active");
+	$(obj).addClass("active");
+	
+	reflash( $(".dashboard-menu li.active").attr("sid"));
+	
+	// 关注其他项目
+	tempT = "/scene/update/"+ $(".dashboard-menu li.active").attr("sid")  ;
+	client.subscribe(tempT );
+	// 发送订阅
+	client.publish('/update/scene/'+$(".dashboard-menu li.active").attr("sid") , '1' );
+	
+}
+/**
+ * 控制
+ */
+
+ function switchSensor(obj,id,value){
+	var obj = $(obj) ;
+	var requestData = '',src='' ;
+	if( obj.attr("src").indexOf("loading") >-1  ){
+		return ;
+	}
+
+	var measure_type_value = obj.attr("tag");
+	if(convertControl(value,measure_type_value,'打开')){
+		requestData = convertControl(value,measure_type_value,'打开');
+		src = "/iot/image/oss/iot/off_loading.gif";
+	}else if(convertControl(value,measure_type_value,'关闭')){
+		requestData =convertControl(value,measure_type_value,'关闭') ;
+		src = "/iot/image/oss/iot/on_loading.gif" ;
+	}else if(convertControl(value,measure_type_value,'开门成功')){
+		requestData = convertControl(value,measure_type_value,'开门成功');
+		src = "/iot/image/oss/iot/off_loading.gif";
+	}else if(convertControl(value,measure_type_value,'正常')){
+		requestData = convertControl(value,measure_type_value,'正常');
+		src = "/iot/image/oss/iot/on_loading.gif";
+	}
+	obj.attr("src",src);
+	commonAjax('PUT',localUrl+"/sensor/control/realtime/update", {id:id,request_sdata:requestData  },function(data){
+		if(isOK(data)){
+			obj.attr("src",src);
+		}else{
+			tip(data.statusMsg);
+		}
+	});
+}
+
+ function switchSensordian(obj,id,value){
+	commonAjax('PUT',localUrl+"/sensor/control/realtime/update", {id:id,request_sdata: value  },function(data){
+		if(isOK(data)){
+			tip("下发成功");
+		}else{
+			tip(data.statusMsg);
+		}
+	});
+}
+ 
+var device_code ='' ;
+ 
+$(function(){
+	
+	reflash( $(".dashboard-menu li.active").attr("sid"));
+
+	setInterval(function(){
+ 		reflash( $(".dashboard-menu li.active").attr("sid"));
+	},30 * 1000);
+	
+})
+
+function searchDevice(){
+	if( validater.empty( $(".device_code").val() )  ){
+		tip("请输入的设备号");
+		return ;
+	}else{
+		device_code = $(".device_code").val() ;
+		reflash( $(".dashboard-menu li.active").attr("sid"));
+	}
+}
+ var loading;
+// 刷新传感器数据
+function reflash(sid){
+	if( validater.empty(sid) ){
+		return ;
+	}
+	searchDeviceInfo( {scene_id:sid, node_data_type:0 , device_code:device_code } );
+	loading = layer.load(1, {
+        shade: false,
+        time: 2*1000
+    });
+}
+
+function searchDeviceInfo(dataParam){
+	postAjax(localUrl+"/page/node/sensor/list.json", dataParam ,function(data){
+		$(".sceneList-info").empty();
+		if(isOK(data)){
+			var dataObj = data.data ;
+			for(var i=0; i <dataObj.length;i++){
+				$(".sceneList-info").append($("#template0").html().format( dataObj[i].name ,
+						nodeStatusInfo(dataObj[i].iot_node_status ,dataObj[i].data.iot_node_status) ,
+						dataObj[i].device_code,getSensorListHtml(dataObj[i].iotSensorList, dataParam.scene_id),dataObj[i].id ) );
+			}
+		}
+	});
+}
+
+
+Date.prototype.Format = function (fmt) { // author: meizz
+	  var o = {
+	    "M+": this.getMonth() + 1, // 月份
+	    "d+": this.getDate(), // 日
+	    "h+": this.getHours(), // 小时
+	    "m+": this.getMinutes(), // 分
+	    "s+": this.getSeconds(), // 秒
+	    "q+": Math.floor((this.getMonth() + 3) / 3), // 季度
+	    "S": this.getMilliseconds() // 毫秒
+	  };
+	  if (/(y+)/.test(fmt))
+	    fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+	  for (var k in o)
+	    if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+	      return fmt;
+	}
+	
+function Subtr(arg1,arg2){ 
+	 var r1,r2,m,n; 
+	 try{r1=arg1.toString().split(".")[1].length}catch(e){r1=0} 
+	 try{r2=arg2.toString().split(".")[1].length}catch(e){r2=0} 
+	 m=Math.pow(10,Math.max(r1,r2)); 
+	 n=(r1>=r2)?r1:r2; 
+	 if(((arg1*m-arg2*m)/m).toFixed(n) < 0){
+		 return 0;
+	 }
+	 return ((arg1*m-arg2*m)/m).toFixed(n); 
+	}
+	
+
+function getSensorListHtml(dataT,sid){
+	var str = '' ;
+	var src1 = 'src="/iot/image/oss/iot/on.png"';
+	var src2 = 'src="/iot/image/oss/iot/off.png"';
+	for(var i=0;i<dataT.length;i++){
+		// 传感器logo数据
+		var sensorLogo = dataT[i].measure_unit_type ;
+		if( dataT[i].iot_sensor_type == 25 ){
+			if(sensor_self_flag == 0){
+				sensorLogo=25;
+			}
+			
+
+				str+=$("#template1").html().format(disvalue(dataT[i].name,9),
+						dataT[i].data.iot_sensor_status,
+						timeStamp2String(dataT[i].mtime,'yyyy/MM/dd hh:mm:ss'),
+						 gdv(dataT[i].sdata,0)+" "+dataT[i].data.measure_unit_type,dataT[i].id,sid ,sensorLogo);
+			 if(dataT[i].name == "雨量"){
+				 
+				var myDate = new Date();
+				var min = myDate.getMinutes(); //获取当前分钟数(0-59)
+				var hou = myDate.getHours(); //获取当前小时数(0-23)
+				var day = myDate.getDate(); //获取当前日(1-31)
+				var sec = myDate.getSeconds(); //获取当前秒数(0-59)
+				var mon = myDate.getMonth(); //获取当前月份(0-11,0代表1月)
+				
+				//五分钟
+				var data1 = dataT[i].data1;
+				//十分钟
+				var data2 = dataT[i].data2;
+				//一小时
+				var data3 = dataT[i].data3;
+				//一天
+				var data4 = dataT[i].data4;
+				//月雨量
+				var data5 = dataT[i].data5;
+				//季度雨量
+				var data6 = dataT[i].data6;
+				//季度雨量
+				var data7 = dataT[i].data7;
+				
+				var cgqDate = timeStamp2String(dataT[i].mtime,'yyyy-MM-dd hh:mm');// 获取传感器最后一条时间分钟单位
+				var stDate = new Date().Format("yyyy-MM-dd hh:mm"); // 获取当前分钟
+				
+				//清空数据
+				if(mon == "1" && day == "1" && hou == "0" && min == "0" && sec == "0"){
+					//清空五分钟
+					data1 = dataT[i].sdata;
+					//清空十分钟
+					data2 = dataT[i].sdata;
+					//清空一小时
+					data3 = dataT[i].sdata;
+					//清空一天
+					data4 = dataT[i].sdata;
+					//清空月
+					data5 = dataT[i].sdata;
+					//清空季度
+					data6 = dataT[i].sdata;
+					//清空年度
+					data7 = dataT[i].sdata;
+				}
+				if(mon == "1" || mon == "4" || mon == "7" || mon == "10"){
+					if(day == "1" && hou == "0" && min == "0" && sec == "0"){
+						if(cgqDate != stDate){
+							//清空五分钟
+							data1 = dataT[i].sdata;
+							//清空十分钟
+							data2 = dataT[i].sdata;
+							//清空一小时
+							data3 = dataT[i].sdata;
+							//清空一天
+							data4 = dataT[i].sdata;
+							//清空月
+							data5 = dataT[i].sdata;
+							//清空季度
+							data6 = dataT[i].sdata;
+						}
+					}
+				}else if(day == "1" && hou == "0" && min == "0" && sec == "0"){
+					if(cgqDate != stDate){
+						//清空五分钟
+						data1 = dataT[i].sdata;
+						//清空十分钟
+						data2 = dataT[i].sdata;
+						//清空一小时
+						data3 = dataT[i].sdata;
+						//清空一天
+						data4 = dataT[i].sdata;
+						//清空月
+						data5 = dataT[i].sdata;
+					}
+				}else if(min == "0" && hou == "0"){
+					if(cgqDate != stDate){
+						//清空五分钟
+						data1 = dataT[i].sdata;
+						//清空十分钟
+						data2 = dataT[i].sdata;
+						//清空一小时
+						data3 = dataT[i].sdata;
+						//清空一天
+						data4 = dataT[i].sdata;
+					}
+				}else if(min == "0"){
+					if(cgqDate != stDate){
+						//清空五分钟
+						data1 = dataT[i].sdata;
+						//清空十分钟
+						data2 = dataT[i].sdata;
+						//清空一小时
+						data3 = dataT[i].sdata;
+					}
+				}else if(min == "5"){
+					if(cgqDate != stDate){
+						//清空五分钟
+						data1 = dataT[i].sdata;
+					}
+				}else if(min == "10"){
+					if(cgqDate != stDate){
+						//清空五分钟
+						data1 = dataT[i].sdata;
+						//清空十分钟
+						data2 = dataT[i].sdata;
+					}
+				}else if(min == "15"){
+					if(cgqDate != stDate){
+						//清空五分钟
+						data1 = dataT[i].sdata;
+					}
+				}else if(min == "20"){
+					if(cgqDate != stDate){
+						//清空五分钟
+						data1 = dataT[i].sdata;
+						//清空十分钟
+						data2 = dataT[i].sdata;
+					}
+				}else if(min == "25"){
+					if(cgqDate != stDate){
+						//清空五分钟
+						data1 = dataT[i].sdata;
+					}
+				}else if(min == "30"){
+					if(cgqDate != stDate){
+						//清空五分钟
+						data1 = dataT[i].sdata;
+						//清空十分钟
+						data2 = dataT[i].sdata;
+					}
+				}else if(min == "35"){
+					if(cgqDate != stDate){
+						//清空五分钟
+						data1 = dataT[i].sdata;
+					}
+				}else if(min == "40"){
+					if(cgqDate != stDate){
+						//清空五分钟
+						data1 = dataT[i].sdata;
+						//清空十分钟
+						data2 = dataT[i].sdata;
+					}
+				}else if(min == "45"){
+					if(cgqDate != stDate){
+						//清空五分钟
+						data1 = dataT[i].sdata;
+					}
+				}else if(min == "50"){
+					if(cgqDate != stDate){
+						//清空五分钟
+						data1 = dataT[i].sdata;
+						//清空十分钟
+						data2 = dataT[i].sdata;
+					}
+				}else if(min == "55"){
+					if(cgqDate != stDate){
+						//清空五分钟
+						data1 = dataT[i].sdata;
+					}
+				}
+				
+				var nowDate = new Date();  //获取现在时间
+				var sensorDate = new Date(timeStamp2String(dataT[i].mtime,'yyyy-MM-dd hh:mm:ss'));//传感器最后一条时间
+				var stDate = new Date().Format("yyyy-MM-dd ") + "00:01:00";
+				var stDate1 = new Date(stDate).getTime();
+				var date3 = nowDate.getTime() - sensorDate.getTime();
+				
+				var stTiem = sensorDate.getTime();
+				var endTime = nowDate.getTime();
+				
+                var cTime = Number(endTime)-Number(stTiem);
+                var minutes = cTime/1000/60;
+				
+				if(minutes > 5){
+					//清空五分钟
+					data1 = dataT[i].sdata;
+				}
+				if(minutes > 10){
+					//清空五分钟
+					data1 = dataT[i].sdata;
+					//清空十分钟
+					data2 = dataT[i].sdata;
+				}
+				if(minutes > 60){
+					//清空五分钟
+					data1 = dataT[i].sdata;
+					//清空十分钟
+					data2 = dataT[i].sdata;
+					//清空一小时
+					data3 = dataT[i].sdata;
+				}
+				if(minutes > 1440){
+					//清空五分钟
+					data1 = dataT[i].sdata;
+					//清空十分钟
+					data2 = dataT[i].sdata;
+					//清空一小时
+					data3 = dataT[i].sdata;
+					//清空一天
+					data4 = dataT[i].sdata;
+				}
+				if(minutes > 43200){
+					//清空五分钟
+					data1 = dataT[i].sdata;
+					//清空十分钟
+					data2 = dataT[i].sdata;
+					//清空一小时
+					data3 = dataT[i].sdata;
+					//清空一天
+					data4 = dataT[i].sdata;
+					//清空一月
+					data5 = dataT[i].sdata;
+				}
+				if(minutes > 129600){
+					//清空五分钟
+					data1 = dataT[i].sdata;
+					//清空十分钟
+					data2 = dataT[i].sdata;
+					//清空一小时
+					data3 = dataT[i].sdata;
+					//清空一天
+					data4 = dataT[i].sdata;
+					//清空一月
+					data5 = dataT[i].sdata;
+					//清空季度
+					data6 = dataT[i].sdata;
+				}
+				if(minutes > 518400){
+					//清空五分钟
+					data1 = dataT[i].sdata;
+					//清空十分钟
+					data2 = dataT[i].sdata;
+					//清空一小时
+					data3 = dataT[i].sdata;
+					//清空一天
+					data4 = dataT[i].sdata;
+					//清空一月
+					data5 = dataT[i].sdata;
+					//清空季度
+					data6 = dataT[i].sdata;
+					//清空季度
+					data7 = dataT[i].sdata;
+				}
+				
+				var todayTime1 = timeStamp2String(dataT[i].mtime,'yyyy-MM-dd');
+				var todayTime2 = new Date().Format("yyyy-MM-dd");
+				if(todayTime1 != todayTime2){
+					//清空五分钟
+					data1 = dataT[i].sdata;
+					//清空十分钟
+					data2 = dataT[i].sdata;
+					//清空一小时
+					data3 = dataT[i].sdata;
+					//清空一天
+					data4 = dataT[i].sdata;
+				}
+				 
+				str+=$("#template1").html().format(disvalue(dataT[i].name+"五分钟",9),
+						dataT[i].data.iot_sensor_status,
+						timeStamp2String(dataT[i].mtime,'yyyy/MM/dd hh:mm:ss'),
+						 gdv(Subtr(dataT[i].sdata , data1),0)+" "+dataT[i].data.measure_unit_type,dataT[i].id,sid ,sensorLogo);
+				
+				str+=$("#template1").html().format(disvalue(dataT[i].name+"十分钟",9),
+						dataT[i].data.iot_sensor_status,
+						timeStamp2String(dataT[i].mtime,'yyyy/MM/dd hh:mm:ss'),
+						 gdv(Subtr(dataT[i].sdata , data2),0)+" "+dataT[i].data.measure_unit_type,dataT[i].id,sid ,sensorLogo);
+				
+				str+=$("#template1").html().format(disvalue(dataT[i].name+"一小时",9),
+						dataT[i].data.iot_sensor_status,
+						timeStamp2String(dataT[i].mtime,'yyyy/MM/dd hh:mm:ss'),
+						 gdv(Subtr(dataT[i].sdata , data3),0)+" "+dataT[i].data.measure_unit_type,dataT[i].id,sid ,sensorLogo);
+				
+				str+=$("#template1").html().format(disvalue(dataT[i].name+"一天",9),
+						dataT[i].data.iot_sensor_status,
+						timeStamp2String(dataT[i].mtime,'yyyy/MM/dd hh:mm:ss'),
+						 gdv(Subtr(dataT[i].sdata , data4),0)+" "+dataT[i].data.measure_unit_type,dataT[i].id,sid ,sensorLogo);
+				
+				str+=$("#template1").html().format(disvalue(dataT[i].name+"一月",9),
+						dataT[i].data.iot_sensor_status,
+						timeStamp2String(dataT[i].mtime,'yyyy/MM/dd hh:mm:ss'),
+						 gdv(Subtr(dataT[i].sdata , data5),0)+" "+dataT[i].data.measure_unit_type,dataT[i].id,sid ,sensorLogo);
+				
+				str+=$("#template1").html().format(disvalue(dataT[i].name+"季度",9),
+						dataT[i].data.iot_sensor_status,
+						timeStamp2String(dataT[i].mtime,'yyyy/MM/dd hh:mm:ss'),
+						 gdv(Subtr(dataT[i].sdata , data6),0)+" "+dataT[i].data.measure_unit_type,dataT[i].id,sid ,sensorLogo);
+				
+				str+=$("#template1").html().format(disvalue(dataT[i].name+"年度",9),
+						dataT[i].data.iot_sensor_status,
+						timeStamp2String(dataT[i].mtime,'yyyy/MM/dd hh:mm:ss'),
+						 gdv(Subtr(dataT[i].sdata , data7),0)+" "+dataT[i].data.measure_unit_type,dataT[i].id,sid ,sensorLogo);
+			} 
+							 
+		}else if( dataT[i].iot_sensor_type == 26 ){
+			
+			if(sensor_self_flag == 0){
+				sensorLogo=26;
+			}
+			if( dataT[i].measure_unit_type == 250 ){
+				str+=$("#template3").html().format(disvalue(dataT[i].name,9),
+						dataT[i].data.iot_sensor_status,
+								timeStamp2String(dataT[i].mtime,'yyyy/MM/dd hh:mm:ss'),
+								 getWindUint(gdv(dataT[i].sdata,0)),dataT[i].id,sid ,sensorLogo);
+			}else{
+				str+=$("#template3").html().format(disvalue(dataT[i].name,9),
+						dataT[i].data.iot_sensor_status,
+								timeStamp2String(dataT[i].mtime,'yyyy/MM/dd hh:mm:ss'),
+								gdv(dataT[i].data.measure_unit_type,'-'),dataT[i].id,sid ,sensorLogo);
+			}
+		}else if( dataT[i].iot_sensor_type == 27  ){
+			
+			if(sensor_self_flag == 0){
+				sensorLogo=27;
+			}
+			str+=$("#template2").html().format(disvalue(dataT[i].name,9),
+					dataT[i].data.iot_sensor_status,
+					timeStamp2String(dataT[i].mtime,'yyyy/MM/dd hh:mm:ss'),
+					tom(convertControl( dataT[i].sdata,dataT[i].data.measure_unit_type_value,'打开'),src1,src2 ),
+					dataT[i].id,dataT[i].sdata,sid,dataT[i].data.measure_unit_type_value,sensorLogo );
+		}else if(dataT[i].iot_sensor_type == 90 ){
+			
+			// gps定位数据
+			if(sensor_self_flag == 0){
+				sensorLogo=609;
+			}
+			str+=$("#template6").html().format(disvalue(dataT[i].name,9),
+					dataT[i].data.iot_sensor_status,
+							timeStamp2String(dataT[i].mtime,'yyyy/MM/dd hh:mm:ss'),
+							gdv(dataT[i].str_sdata,'-'),dataT[i].id,sid, sensorLogo );
+		}else if(dataT[i].iot_sensor_type == 190){
+			
+			if(sensor_self_flag == 0){
+				sensorLogo=27;
+			}
+			str+=$("#template7").html().format(disvalue(dataT[i].name,9),
+					dataT[i].data.iot_sensor_status,
+					timeStamp2String(dataT[i].mtime,'yyyy/MM/dd hh:mm:ss'),
+					'src="/iot/image/oss/iot/switch.png"',
+					dataT[i].id,dataT[i].param_type,sid,dataT[i].data.measure_unit_type_value,sensorLogo );
+		}
+	}
+	
+	if( validater.empty(str) ){
+		str = "<p style='color:#aaa;text-align:center;'>暂无设备传感点</p>"
+	}
+	layer.close(loading);
+	return str ;
+}
+
+function getMoreSwitch(data,dataType,sensor_id){
+	var html = '' ;
+	var str = dataType.split(",");
+	for(var o =0;o<str.length; o++){
+		var tmp = str[o].split(":");
+		if(tmp[0] == data ){
+			html += '<button type="button" onclick="change(this,'+tmp[0]+','+ sensor_id +')" class="button border-sub active">'+tmp[1]+'</button>' ;
+		}else{
+			html += '<button type="button" onclick="change(this,'+tmp[0]+','+sensor_id+')" class="button border-sub ">'+tmp[1]+'</button>' ;
+		}
+	}
+	var butn = 
+	'<div class="button-group button-group-small" style="margin-top:15px;" >'+ 
+		html+
+	'</div>' ;
+	return butn ;
+}
+
+function nodeStatusInfo(code,value){
+	if(code == 16){
+		return "<span class='blue-span'>"+value+"</span>" ;
+	}else{
+		return "<span class='red-span'>"+value+"</span>" ;
+	}
+}
+
+function getVideoInfo(sid){
+	postAjax(localUrl+"/page/video.json?pageSize=300&paged=1", {scene_id:sid},function(data){
+		$(".video_container").empty();
+		if(isOK(data)){
+			$(".video-box-container").show();
+			var dataT = data.data.data ;
+			dataCache = dataT ;
+			for(var i=0;i<dataT.length;i++){
+				$(".video_container").append(
+						$("#template5").html().format(disvalue(dataT[i].name,7),
+								dataT[i].data.status,
+								timeStamp2String(dataT[i].atime,'yy/MM/dd hh:mm:ss'),
+								 "",dataT[i].id,sid));
+			}
+		}else{
+			$(".video-box-container").hide();
+		}
+	});
+}
+
+function change(obj,data,sensor_id){
+	layer.load(2);	
+	setTimeout(function() {
+		layer.closeAll();
+		commonAjax('PUT',localUrl+"/sensor/control/realtime/update", {id: sensor_id ,request_sdata: data  },function(data){
+			if(isOK(data)){
+				
+			}else{
+				tip(data.statusMsg);
+			}
+		});
+	}, 500);
+}
+
+
+function getWindUint(sdata){
+	if( sdata == 0 ){
+		return "北风 " ;
+	}else if( sdata >0 && sdata <90 ){
+		return "东北 ";
+	}else if( sdata == 90 ){
+		return "东 ";
+	}else if( sdata >90 && sdata <180 ){
+		return "东南 ";
+	}else if( sdata== 180 ){
+		return "南 ";
+	}else if( sdata >180 && sdata <270 ){
+		return "西南 ";
+	}else if( sdata ==270 ){
+		return "西 ";
+	}else if( sdata >270 ){
+		return "西北 ";
+	}
+}
+
+function deviceSetting(node_id){
+	layer.open({
+		  type: 2,
+		  title: '设备参数配置',
+		  area: ['730px', '460px'],
+		  shade: 0.1,
+		  closeBtn: 1,
+		  shadeClose: true,
+		  content: localUrl+"/iot/device_setting?id="+node_id
+	});
+}
+
+//客户端
+var client ;
+function mqttInit(){
+	// 连接选项
+	const options = {
+	      connectTimeout: 4000, // 超时时间
+	      // 认证信息
+	      clientId: 'brower_' + parseInt(Math.random()/31.1*10000000000),
+	      username: 'iot2yun',
+	      password: 'iot2yun',
+	}
+	client = mqtt.connect('ws://'+document.domain+':8083/mqtt', options) ;
+	client.on('reconnect', function(error)  {
+		client = mqtt.connect('ws://'+document.domain+':8083/mqtt', options) ;
+	})
+	client.on('error', function(error) {
+	    console.log('连接失败:', error)
+	})
+	client.on('message', function(topic, message,s) {
+		if( message.toString() == '1' ){
+			reflash( $(".dashboard-menu li.active").attr("sid"));
+		}
+	})
+}
+$(function(){
+	mqttInit();
+	setTimeout( function() {
+		var tempT = "/scene/update/"+ $(".dashboard-menu li.active").attr("sid")  ;
+		client.subscribe(tempT );
+		
+		client.publish('/update/scene/'+$(".dashboard-menu li.active").attr("sid") , '1' );
+	}, 1000);
+	
+})
+
+</script>
+<div class="layui-layer-move"></div></body></html>
