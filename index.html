@@ -1,1 +1,286 @@
-<h1>许智鸣网站测试</h1>
+
+
+
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+
+
+
+ 
+  
+
+
+
+
+<script>
+	var basePath = "/iot" ;
+	var localUrl = basePath +  "/service";
+	var imgUrl = "http://wulian.voczxjc.com/res";
+	var base_domain="http://"+window.location.host+"/iot";
+ 	var userKey= "2e7358d0a5a942edb9dfc25b226e5179"; 
+	var websocket_url = 'ws://' + window.location.host + '物联网平台/service/websocket';
+	var videoUrl = "";
+	var status_code  =  {
+			'OK' : 2 ,
+			'NO_DATA':4
+	}
+	var device_status = {
+			'OPEN': 65535,
+			'CLOSE': 0
+	};
+</script>
+<title>物联网平台</title> 
+  <link rel="shortcut icon" href="/iot/image/oss/iot/favicon2.ico" type="image/x-icon">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <link rel="stylesheet" href="static/css/layui.css" media="all">
+  <link rel="stylesheet" href="static/css/admin.css" media="all">
+  
+
+</head>
+<body class="layui-layout-body">
+  
+  <div id="LAY_app">
+    <div class="layui-layout layui-layout-admin">
+      <div class="layui-header">
+        <!-- 头部区域 -->
+        <ul class="layui-nav layui-layout-left">
+          <li class="layui-nav-item layadmin-flexible" lay-unselect>
+            <a href="javascript:;" layadmin-event="flexible" title="侧边伸缩">
+              <i class="layui-icon layui-icon-shrink-right" id="LAY_app_flexible"></i>
+            </a>
+          </li>
+          <li class="layui-nav-item layui-hide-xs" >
+            <a target="_blank" href="/iot/page/bigscreen/index.html">
+              	大屏展示
+            </a>
+          </li>
+        </ul>
+        <ul class="layui-nav layui-layout-right" lay-filter="layadmin-layout-right">
+          
+          <li class="layui-nav-item" lay-unselect>
+            <a lay-href="/iot/service/iot/alarm_manager"  lay-text="消息中心">
+              <i class="layui-icon layui-icon-notice"></i>
+              <span class="layui-badge-dot alarm-message"></span>
+            </a>
+          </li>
+          <li class="layui-nav-item layui-hide-xs" lay-unselect>
+            <a href="javascript:;" layadmin-event="fullscreen">
+              <i class="layui-icon layui-icon-screen-full"></i>
+            </a>
+          </li>
+          <li class="layui-nav-item layui-hide-xs"> 
+          	<span class="user-type">普通用户</span>
+          </li>
+          <li class="layui-nav-item" lay-unselect  style="margin-right: 30px;">
+            <a href="javascript:;">
+              <cite>
+              	
+				 	 李佳男
+				 
+				 
+              </cite>
+            </a>
+            <dl class="layui-nav-child" style="padding: 0;">
+              <dd><a style="text-align: center;" lay-href="/iot/service/iot/user_detail">个人信息</a></dd>
+              <dd><a style="text-align: center;" lay-href="/iot/service/iot/user_info" >修改密码</a></dd>
+              <hr style="margin: 0;">
+              <dd style="text-align: center;cursor:pointer;"><a onclick="logout()" > 退出账户</a></dd>
+            </dl>
+          </li>
+        </ul>
+      </div>
+      
+      <!-- 侧边菜单 -->
+      <div class="layui-side layui-side-menu">
+        <div class="layui-side-scroll">
+          <div class="layui-logo" lay-href="/iot/service/iot/app_map">
+          	<span><img style="width: 30px;margin-top: -2px;margin-right: 3px;" src="static/picture/logo13.png">
+          	</span>
+            <span>物联网管控平台</span>
+          </div>
+          
+          <ul class="layui-nav layui-nav-tree" lay-shrink="all" id="LAY-system-side-menu" lay-filter="layadmin-system-side-menu">
+            <li data-name="home" class="layui-nav-item layui-nav-itemed">
+              <a href="javascript:;" lay-tips="平台概览" lay-direction="2">
+                <i class="layui-icon layui-icon-home"></i>
+                <cite>平台概览</cite>
+              </a>
+              <dl class="layui-nav-child">
+                <dd data-name="console" class="layui-this">
+                  <a lay-href="/iot/service/iot/app_map">
+                  	<i class="layui-icon layui-icon-right"></i>项目信息</a>
+                </dd>
+                <dd data-name="console">
+                  <a lay-href="/iot/service/iot/device_location">
+                  	<i class="layui-icon layui-icon-right"></i>设备地图</a>
+                </dd>
+                <dd data-name="console">
+                  <a lay-href="/iot/service/iot/app_status">
+                  	<i class="layui-icon layui-icon-right"></i>系统统计</a>
+                </dd>
+              </dl>
+            </li>
+            <li data-name="component" class="layui-nav-item">
+              <a href="javascript:;" lay-tips="实时监控" lay-direction="2">
+                <i class="layui-icon layui-icon-component"></i>
+                <cite>实时监控</cite>
+              </a>
+              <dl class="layui-nav-child">
+                <dd data-name="button">
+                  <a lay-href="/iot/service/iot/monitor">
+                  	<i class="layui-icon layui-icon-right"></i> 设备监控</a>
+                </dd>
+                <dd data-name="button2">
+                  <a lay-href="/iot/service/iot/device_list">
+                  	<i class="layui-icon layui-icon-right"></i> 列表监控</a>
+                </dd>
+                <dd data-name="nav">
+                  <a lay-href="/iot/service/iot/mvideo">
+                  	<i class="layui-icon layui-icon-right"></i>视频监控</a>
+                </dd>
+              </dl>
+            </li>
+            <li data-name="template" class="layui-nav-item">
+              <a href="javascript:;" lay-tips="报警信息" lay-direction="2">
+                <i class="layui-icon layui-icon-template"></i>
+                <cite>报警信息</cite>
+              </a>
+              <dl class="layui-nav-child">
+                <dd><a lay-href="/iot/service/iot/alarm_manager">
+                	<i class="layui-icon layui-icon-right"></i>未读报警</a></dd>
+                <dd><a lay-href="/iot/service/iot/alarm_all">
+                	<i class="layui-icon layui-icon-right"></i>全部报警</a></dd>
+              </dl>
+            </li>
+            
+            <li data-name="history" class="layui-nav-item">
+              <a href="javascript:;" lay-tips="历史数据" lay-direction="2">
+                <i class="layui-icon layui-icon-chart"></i>
+                <cite>历史数据</cite>
+              </a>
+              <dl class="layui-nav-child">
+                <dd><a lay-href="/iot/service/iot/history_sensor_data">
+                	<i class="layui-icon layui-icon-right"></i>设备历史数据</a></dd>
+                <dd><a lay-href="/iot/page/myhtml/index.html">
+                	<i class="layui-icon layui-icon-right"></i>设备历史分析</a></dd>
+                <dd><a lay-href="/iot/service/iot/history_trigger_data">
+                	<i class="layui-icon layui-icon-right"></i>设备历史触发</a></dd>
+              </dl>
+            </li>
+            
+            <li data-name="app" class="layui-nav-item">
+              <a href="javascript:;" lay-tips="用户管理" lay-direction="2">
+                <i class="layui-icon layui-icon-user"></i>
+                <cite>用户信息</cite>
+              </a>
+              <dl class="layui-nav-child">
+               
+                 <dd>
+	                 <a lay-href="/iot/service/iot/user_detail">
+	                  	<i class="layui-icon layui-icon-right"></i>个人信息</a>
+                  </dd>
+                  <dd>
+	                  <a lay-href="/iot/service/iot/user_info">
+	                  	<i class="layui-icon layui-icon-right"></i>修改密码</a>
+                  </dd>
+              </dl>
+            </li>
+           
+            
+             
+            
+             
+            
+            
+            
+            
+          </ul>
+        </div>
+      </div>
+      
+      <!-- 主体内容 -->
+      <div class="layui-body" id="LAY_app_body">
+        <div class="layadmin-tabsbody-item layui-show">
+          <iframe src="/iot/service/iot/app_map" frameborder="0" class="layadmin-iframe"></iframe>
+        </div>
+      </div>
+      
+      <!-- 辅助元素，一般用于移动设备下遮罩 -->
+      <div class="layadmin-body-shade" layadmin-event="shade"></div>
+    </div>
+  </div>
+  <script type="text/javascript" src="static/js/jquery-1.8.3.min.js"></script>
+  <script src="static/js/layui.js"></script>
+  
+ 
+   <script> 
+ 	  layui.config({
+ 	  	base: '/iot/lib/layui/layuiadmin/' 
+ 	  }).extend({
+ 	    index: 'lib/index' //主入口模块
+ 	  }).use('index');
+	  
+ 	  function logout(){
+ 		 localStorage.removeItem("ucode");
+ 		 window.location.href = localUrl + "/user/logout" ;
+ 	  }
+ 	  
+	  $(function(){
+		// 登录成功，则将user-key写到cookie
+		localStorage.setItem("ucode", userKey);
+		
+		getAlarmCount();
+			
+		function getAlarmCount(){
+			postAjax(localUrl+"/alarm/unread", {iot_alarm_process_status:46},function(data){
+				if( data.status == 2 ){
+					if(data.count!=0)
+						$(".alarm-message").show();
+					else{
+						$(".alarm-message").hide();
+					}
+				}
+			})			
+		}
+			
+			// 报警消息定时刷新
+			setInterval(function(){
+				getAlarmCount();
+			}, 1*30*1000);
+		  
+			function postAjax(url, data,sucessCallBack, errorCallBack) {
+				if(typeof(userKey)=="undefined"){
+					userKey='';
+				}
+				$.ajax({
+					type : "POST",
+					url : url,
+					contentType : "application/json",
+					dataType : "json",
+					async : true,
+					headers : {
+						'USER-KEY' :userKey 
+					},
+					data : JSON.stringify(data),
+					success : function(data){
+						sucessCallBack(data);
+					},
+					error : errorCallBack
+				})
+			};
+		  
+	  })
+		
+  </script>
+  
+</body>
+</html>
